@@ -1,0 +1,35 @@
+service: <%=name %>
+
+plugins:
+  - serverless-plugin-optimize
+  - serverless-offline
+  - serverless-lift
+
+provider:
+ name: aws
+ runtime: nodejs16.x
+ stage: ${opt:stage, self:custom.defaultStage}
+ profile: <%=awsProfile %>
+
+custom:
+  defaultStage: dev
+  profiles:
+    # you can use different profiles to have differents AWS accounts for
+    # each environment
+    dev: <%=awsProfile %>
+    prod: <%=awsProfile %>
+
+functions:
+ nestjs: # The name of the lambda function
+   # The module 'handler' is exported in the file 'src/lambda'
+   handler: dist/lambda.handler
+   events:
+     - http:
+         method: any
+         path: /{any+}
+
+constructs:
+  notifications:
+    type: queue
+    worker:
+      handler: dist/sqs.consume
